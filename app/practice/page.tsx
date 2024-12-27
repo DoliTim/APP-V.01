@@ -30,6 +30,7 @@ import { getCurrentUser, updateUserProgress } from '@/lib/auth/local-storage'
 import { cn } from '@/lib/utils'
 import { frequencies } from '@/lib/frequencies/data'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 
 const FrequencyVisualizer3D = dynamic(
   () => import('@/components/practice/frequency-visualizer-3d'),
@@ -126,6 +127,9 @@ export default function PracticePage() {
   const [colorTheme, setColorTheme] = useState(colorThemes[0])
   const [activeSession, setActiveSession] = useState<any>(null)
   const [sessionStep, setSessionStep] = useState(0)
+  const [isV2Pro, setIsV2Pro] = useState(true)
+  const [v2OutputConfirmed, setV2OutputConfirmed] = useState(false)
+  const [showV2Setup, setShowV2Setup] = useState(false)
 
   const categories = Array.from(new Set(frequencies.map(f => f.category)))
 
@@ -247,6 +251,32 @@ export default function PracticePage() {
 
   return (
     <>
+      {/* Universal Top Navigation Bar */}
+      <div className="fixed top-0 left-0 right-0 h-16 bg-black/50 backdrop-blur-lg border-b border-white/10 z-50">
+        <div className="max-w-7xl mx-auto h-full px-4 flex items-center">
+          <div className="flex-1" /> {/* Left spacer */}
+          
+          <Link 
+            href="/landing" 
+            className="flex items-center gap-3 group transition-transform hover:scale-105"
+          >
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 flex items-center justify-center shadow-lg">
+              <Waves className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors">
+                SCHUMANN
+              </span>
+              <span className="text-xs font-medium text-white/60">
+                FREQUENCY HEALING
+              </span>
+            </div>
+          </Link>
+
+          <div className="flex-1" /> {/* Right spacer */}
+        </div>
+      </div>
+
       <div className="min-h-screen bg-black text-white p-8 pt-24">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
@@ -341,92 +371,202 @@ export default function PracticePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Frequency Control */}
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-x-2">
-                      <Music2 className="h-4 w-4 text-purple-400" />
-                      Frequency: {frequency.toFixed(2)} Hz
-                    </Label>
-                    <Slider
-                      value={[frequency]}
-                      onValueChange={([value]: number[]) => !activeSession && setFrequency(value)}
-                      min={isProVersion ? 0.1 : 7.83}
-                      max={isProVersion ? 999.99 : 7.83}
-                      step={0.01}
-                      className="bg-purple-500/10"
-                      disabled={!!activeSession}
-                    />
-                  </div>
+                  {/* Practice Controls */}
+                  <div className="space-y-6 p-6 bg-black/20 backdrop-blur-sm rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-semibold text-white">Practice Controls</h3>
+                        <p className="text-sm text-white/70">Adjust your practice settings</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="v2pro"
+                          checked={isV2Pro}
+                          onCheckedChange={setIsV2Pro}
+                          className="data-[state=checked]:bg-gradient-to-r from-violet-600 to-indigo-600"
+                        />
+                        <Label htmlFor="v2pro" className="text-sm font-medium text-white">
+                          V2 PRO ✨
+                        </Label>
+                      </div>
+                    </div>
 
-                  {/* Volume Control */}
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-x-2">
-                      <Volume2 className="h-4 w-4 text-purple-400" />
-                      Volume: {volume}%
-                    </Label>
-                    <Slider
-                      value={[volume]}
-                      onValueChange={([value]: number[]) => setVolume(value)}
-                      min={0}
-                      max={100}
-                      className="bg-purple-500/10"
-                    />
-                  </div>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-white">Frequency (Hz)</Label>
+                        <div className="flex items-center gap-4">
+                          <Slider
+                            value={[frequency]}
+                            onValueChange={([value]: number[]) => setFrequency(value)}
+                            min={isV2Pro ? 0.1 : 7.83}
+                            max={isV2Pro ? 999.99 : 14.3}
+                            step={0.01}
+                            className="flex-1"
+                          />
+                          <div className="w-20 text-right">
+                            <input
+                              type="number"
+                              value={frequency}
+                              onChange={(e) => setFrequency(Number(e.target.value))}
+                              min={isV2Pro ? 0.1 : 7.83}
+                              max={isV2Pro ? 999.99 : 14.3}
+                              step={0.01}
+                              className="w-full bg-black/20 border border-white/20 rounded px-2 py-1 text-white text-right"
+                            />
+                          </div>
+                        </div>
+                      </div>
 
-                  {/* Duration Control */}
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-x-2">
-                      <Timer className="h-4 w-4 text-purple-400" />
-                      Duration: {duration} minutes
-                    </Label>
-                    <Slider
-                      value={[duration]}
-                      onValueChange={([value]: number[]) => !activeSession && setDuration(value)}
-                      min={5}
-                      max={60}
-                      step={5}
-                      className="bg-purple-500/10"
-                      disabled={!!activeSession}
-                    />
-                  </div>
+                      {/* Volume Control */}
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-x-2">
+                          <Volume2 className="h-4 w-4 text-purple-400" />
+                          Volume: {volume}%
+                        </Label>
+                        <Slider
+                          value={[volume]}
+                          onValueChange={([value]: number[]) => setVolume(value)}
+                          min={0}
+                          max={100}
+                          className="bg-purple-500/10"
+                        />
+                      </div>
 
-                  {/* Visualization Toggle */}
-                  <div className="flex items-center justify-between">
-                    <Label className="flex items-center gap-x-2">
-                      <Brain className="h-4 w-4 text-purple-400" />
-                      Visual Entrainment
-                    </Label>
-                    <Switch
-                      checked={visualize}
-                      onCheckedChange={setVisualize}
-                    />
-                  </div>
+                      {/* Duration Control */}
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-x-2">
+                          <Timer className="h-4 w-4 text-purple-400" />
+                          Duration: {duration} minutes
+                        </Label>
+                        <Slider
+                          value={[duration]}
+                          onValueChange={([value]: number[]) => !activeSession && setDuration(value)}
+                          min={5}
+                          max={60}
+                          step={5}
+                          className="bg-purple-500/10"
+                          disabled={!!activeSession}
+                        />
+                      </div>
 
-                  {/* Play/Pause Button */}
-                  <Button
-                    onClick={() => {
-                      if (isPlaying) {
-                        setIsPlaying(false)
-                        setActiveSession(null)
-                        setSessionStep(0)
-                      } else {
-                        setIsPlaying(true)
-                      }
-                    }}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                  >
-                    {isPlaying ? (
-                      <>
-                        <Pause className="h-4 w-4 mr-2" />
-                        Pause ({formatTime(elapsedTime)} / {formatTime(duration * 60)})
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4 mr-2" />
-                        Start Practice
-                      </>
-                    )}
-                  </Button>
+                      {/* Visualization Toggle */}
+                      <div className="flex items-center justify-between">
+                        <Label className="flex items-center gap-x-2">
+                          <Brain className="h-4 w-4 text-purple-400" />
+                          Visual Entrainment
+                        </Label>
+                        <Switch
+                          checked={visualize}
+                          onCheckedChange={setVisualize}
+                        />
+                      </div>
+
+                      {/* Safety Check for V2 Output */}
+                      <div className="space-y-4">
+                        {/* V2 Output Confirmation */}
+                        {isV2Pro && !v2OutputConfirmed && !isPlaying && frequency !== 7.83 && (
+                          <div className="p-3 bg-orange-500/20 rounded-lg space-y-2">
+                            <div className="flex items-start gap-2">
+                              <div className="h-5 w-5 mt-1 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-300">!</div>
+                              <div className="flex-1">
+                                <p className="text-sm text-orange-200">Safety Check Required</p>
+                                <p className="text-xs text-orange-200/70 mt-1">
+                                  Please confirm that you have connected your V2 PRO device to the frequency output before playing {frequency}Hz.
+                                </p>
+                              </div>
+                            </div>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={v2OutputConfirmed}
+                                onChange={(e) => setV2OutputConfirmed(e.target.checked)}
+                                className="rounded border-orange-500/50 bg-orange-500/20 text-orange-500"
+                              />
+                              <span className="text-sm text-orange-200">I confirm my V2 PRO is properly connected</span>
+                            </label>
+                          </div>
+                        )}
+
+                        {/* V2 Setup Instructions */}
+                        {showV2Setup && !isPlaying && (
+                          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                            <div className="bg-black/90 border border-purple-500/20 rounded-xl max-w-md w-full p-6 space-y-4">
+                              <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+                                <Settings2 className="h-5 w-5 text-purple-400" />
+                                V2 Setup Required
+                              </h3>
+                              
+                              <div className="space-y-4 text-white/80">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">1</div>
+                                  <p>Set your V2 device frequency to {frequency}Hz</p>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">2</div>
+                                  <p>Connect the output to your preferred method (headphones, speakers, etc.)</p>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">3</div>
+                                  <p>Ensure volume levels are set appropriately</p>
+                                </div>
+                              </div>
+
+                              <Button
+                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                                onClick={() => {
+                                  setShowV2Setup(false)
+                                  setIsPlaying(true)
+                                }}
+                              >
+                                <Sparkles className="h-4 w-4 mr-2" />
+                                Setup Complete - Start Practice
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Play/Pause Button */}
+                        <Button
+                          onClick={() => {
+                            if (isPlaying) {
+                              setIsPlaying(false)
+                              setActiveSession(null)
+                              setSessionStep(0)
+                            } else {
+                              setShowV2Setup(true) // Show setup instructions instead of playing immediately
+                            }
+                          }}
+                          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        >
+                          {isPlaying ? (
+                            <>
+                              <Pause className="h-4 w-4 mr-2" />
+                              Pause ({formatTime(elapsedTime)} / {formatTime(duration * 60)})
+                            </>
+                          ) : (
+                            <>
+                              <Play className="h-4 w-4 mr-2" />
+                              Start Practice
+                            </>
+                          )}
+                        </Button>
+
+                        {/* V2 PRO Status */}
+                        {isV2Pro && (
+                          <div className="pt-4 border-t border-white/10">
+                            <div className="flex items-center justify-between text-sm text-white/70">
+                              <span>✨ V2 PRO Features Active</span>
+                              <span>
+                                {frequency === 7.83 
+                                  ? "Using Standard 7.83Hz" 
+                                  : "Full Range: 0.1Hz - 999.99Hz"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
