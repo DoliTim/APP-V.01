@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  reactStrictMode: true,
+  swcMinify: true,
   images: {
     unoptimized: true,
   },
@@ -9,6 +10,21 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true, // For now, to get the build working
+  },
+  // Netlify specific settings
+  target: 'serverless',
+  // Add rewrites for app routes
+  async rewrites() {
+    return [
+      {
+        source: '/landing',
+        destination: '/app/landing/page',
+      },
+      {
+        source: '/practice',
+        destination: '/app/practice/page',
+      }
+    ]
   }
 }
 
