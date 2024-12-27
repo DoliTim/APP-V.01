@@ -5,11 +5,22 @@
 [build.environment]
   NEXT_PUBLIC_SITE_URL = "https://schumann-app.netlify.app"
   NODE_VERSION = "18"
+  PYTHON_VERSION = "3.9"
+  NEXT_USE_NETLIFY_EDGE = "true"
+  NEXT_TELEMETRY_DISABLED = "1"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[functions]
+  included_files = [".next/standalone/**"]
+  node_bundler = "esbuild"
+
 [[redirects]]
   from = "/*"
-  to = "/index.html"
-  status = 200 
+  to = "/.netlify/functions/server"
+  status = 200
+
+[dev]
+  framework = "next"
+  targetPort = 3000 
