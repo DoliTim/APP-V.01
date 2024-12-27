@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  output: 'export',  // Static export for Netlify
   images: {
     unoptimized: true,
   },
@@ -11,8 +12,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true, // For now, to get the build working
   },
-  // Netlify specific settings
-  target: 'serverless',
   // Add rewrites for app routes
   async rewrites() {
     return [
