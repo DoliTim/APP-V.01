@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  hashedPassword  String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // User progress
+  totalPracticeTime    Int     @default(0)
+  frequenciesMastered  Int     @default(0)
+  currentStreak        Int     @default(0)
+  lastPracticeDate     DateTime?
+
+  // Relations
+  courses       CourseProgress[]
+  preferences   UserPreference?
+  sessions      PracticeSession[]
+}
+
+model CourseProgress {
+  id              String    @id @default(cuid())
+  courseId        String
+  progress        Float     @default(0)
+  completedLessons String[]
+  lastAccessedLesson String?
+  startedAt       DateTime  @default(now())
+  lastAccessed    DateTime  @updatedAt
+
+  // Relations
+  user           User      @relation(fields: [userId], references: [id])
+  userId         String
+}
+
+model UserPreference {
+  id                  String    @id @default(cuid())
+  volume              Int       @default(50)
+  notificationsEnabled Boolean  @default(true)
+  sessionDuration     Int       @default(15)
+  preferredFrequencies Float[]  @default([7.83])
+
+  // Relations
+  user               User      @relation(fields: [userId], references: [id])
+  userId             String    @unique
+}
+
+model PracticeSession {
+  id              String    @id @default(cuid())
+  duration        Int       // in minutes
+  frequency       Float
+  date            DateTime  @default(now())
+  notes           String?
+
+  // Relations
+  user           User      @relation(fields: [userId], references: [id])
+  userId         String
+} 
